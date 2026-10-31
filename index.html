@@ -1,0 +1,244 @@
+<!doctype html>
+<!--
+  index.html — la ESTRUCTURA de la página (qué cajas y botones existen).
+  El aspecto está en estilos.css y el comportamiento en app.js.
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador Binario</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ff6b6b'/%3E%3Cstop offset='.5' stop-color='%23ffb84c'/%3E%3Cstop offset='1' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Ctext x='32' y='43' font-size='30' font-family='monospace' font-weight='700' fill='white' text-anchor='middle'%3E01%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body data-op="suma">
+  <!-- Manchas de color de fondo (decorativas). Cambian de color con la operación. -->
+  <div class="fondo" aria-hidden="true">
+    <span class="mancha m1"></span><span class="mancha m2"></span><span class="mancha m3"></span><span class="mancha m4"></span>
+  </div>
+
+  <div class="app">
+    <!-- ============ ENCABEZADO ============ -->
+    <header class="cabecera">
+      <div class="marca">
+        <div class="logo" aria-hidden="true"><span>0</span><span>1</span></div>
+        <div>
+          <h1>Simulador <em>Binario</em></h1>
+          <p>Aritmética binaria y conversión de texto, viendo cada bit</p>
+        </div>
+      </div>
+      <nav class="modos" id="modos" aria-label="Sección">
+        <button class="modo" type="button" data-vista="aritmetica" aria-selected="true"><i>± × ÷</i>Aritmética</button>
+        <button class="modo" type="button" data-vista="texto" aria-selected="false"><i>Aa↔01</i>Texto ↔ Binario</button>
+      </nav>
+      <div class="estado" id="estado-servidor" title="Estado de Python en el navegador">
+        <i></i><span>Cargando Python…</span>
+      </div>
+    </header>
+
+    <main class="rejilla" id="vista-aritmetica">
+      <!-- ======== COLUMNA IZQUIERDA: calculadora + historial ======== -->
+      <div class="col">
+        <section class="tarjeta calculadora">
+          <h2><b>1</b> ¿Qué quieres hacer?</h2>
+          <!-- Los botones se crean desde app.js con lo que responde Python -->
+          <div class="selector" id="selector" role="tablist" aria-label="Operación">
+            <span class="pastilla" id="pastilla"></span>
+          </div>
+
+          <h2><b>2</b> Escribe los números</h2>
+
+          <div class="campo">
+            <label for="entrada-a">
+              <span class="rol"><i class="letra">A</i><span id="rol-a">Primer sumando</span></span>
+              <span class="decimal" id="decimal-a"></span>
+            </label>
+            <input class="entrada" id="entrada-a" type="text" inputmode="numeric" autocomplete="off"
+                   spellcheck="false" maxlength="80" placeholder="1011" aria-label="Número A en binario">
+            <span class="ayuda" id="ayuda-a"></span>
+            <div class="vista" id="vista-a" aria-hidden="true"></div>
+          </div>
+
+          <!-- El símbolo entre los dos campos deja claro qué se le hace a qué -->
+          <div class="operador" aria-hidden="true"><span id="simbolo-operador">+</span></div>
+
+          <div class="campo">
+            <label for="entrada-b">
+              <span class="rol"><i class="letra">B</i><span id="rol-b">Segundo sumando</span></span>
+              <span class="decimal" id="decimal-b"></span>
+            </label>
+            <input class="entrada" id="entrada-b" type="text" inputmode="numeric" autocomplete="off"
+                   spellcheck="false" maxlength="80" placeholder="110" aria-label="Número B en binario">
+            <span class="ayuda" id="ayuda-b"></span>
+            <div class="vista" id="vista-b" aria-hidden="true"></div>
+          </div>
+
+          <p class="frase" id="frase"></p>
+          <p class="error" id="error" role="alert" hidden></p>
+
+          <div class="acciones">
+            <button class="primario" id="btn-calcular" type="button">Calcular</button>
+            <button class="sec" id="btn-intercambiar" type="button" title="Intercambiar A y B" aria-label="Intercambiar A y B">⇄</button>
+            <button class="sec" id="btn-limpiar" type="button">Limpiar</button>
+          </div>
+
+          <div class="ejemplos">
+            <span>Prueba con</span>
+            <button class="chip" type="button" data-op="suma" data-a="1011" data-b="110">1011 + 110</button>
+            <button class="chip" type="button" data-op="resta" data-a="1011" data-b="110">1011 − 110</button>
+            <button class="chip" type="button" data-op="multiplicacion" data-a="1101" data-b="101">1101 × 101</button>
+            <button class="chip" type="button" data-op="division" data-a="10110" data-b="10">10110 ÷ 10</button>
+          </div>
+        </section>
+
+        <section class="tarjeta historial">
+          <div class="cab">
+            <h2>Historial</h2>
+            <button class="enlace-texto" id="btn-borrar-historial" type="button">Borrar</button>
+          </div>
+          <ul class="lista" id="lista-historial">
+            <li class="vacio-texto">Tus operaciones aparecerán aquí. Haz clic en una para repetirla.</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- ======== COLUMNA DERECHA: resultado + simulación (lo principal) ======== -->
+      <div class="col">
+        <section class="tarjeta simulacion">
+          <div class="cab">
+            <h2>Resultado y simulación</h2>
+            <label class="interruptor">
+              <input type="checkbox" id="auto" checked>
+              <span class="pista"></span> Reproducir solo
+            </label>
+          </div>
+
+          <!-- Franja con el resultado (aparece al calcular) -->
+          <div class="banda" id="resultado-contenido" hidden>
+            <div class="banda-bits">
+              <span class="etq">Resultado</span>
+              <div class="bits" id="resultado-bits"></div>
+              <div class="residuo" id="resultado-residuo" hidden>
+                <span>residuo</span><div class="bits" id="residuo-bits"></div>
+              </div>
+            </div>
+            <div class="banda-info">
+              <span class="insignia" id="insignia" hidden></span>
+              <p class="ecuacion" id="ecuacion"></p>
+              <button class="sec" id="btn-copiar" type="button">Copiar</button>
+            </div>
+          </div>
+
+          <div class="escenario" id="escenario">
+            <div class="vacio">
+              <div class="deco" aria-hidden="true"><span>0</span><span>1</span><span>1</span><span>0</span></div>
+              <p>Elige una operación, escribe dos números<br>y pulsa <b>Calcular</b>: aquí verás cómo<br>se construye el resultado, bit por bit.</p>
+            </div>
+          </div>
+
+          <p class="leyenda" id="leyenda">Cuando calcules, cada paso se explicará aquí.</p>
+
+          <div class="controles">
+            <button class="icono" id="btn-inicio" type="button" title="Volver al inicio" aria-label="Volver al inicio" disabled>
+              <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 5v14M19 5L9 12l10 7z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="icono" id="btn-atras" type="button" title="Paso anterior" aria-label="Paso anterior" disabled>
+              <svg viewBox="0 0 24 24" width="18" height="18"><path d="M15 5l-8 7 8 7z" fill="currentColor"/></svg>
+            </button>
+            <button class="primario redondo" id="btn-play" type="button" title="Reproducir / pausar" aria-label="Reproducir" disabled></button>
+            <button class="icono" id="btn-adelante" type="button" title="Paso siguiente" aria-label="Paso siguiente" disabled>
+              <svg viewBox="0 0 24 24" width="18" height="18"><path d="M9 5l8 7-8 7z" fill="currentColor"/></svg>
+            </button>
+            <input type="range" id="barra" min="0" max="0" value="0" aria-label="Paso actual" disabled>
+            <span class="contador" id="contador">—</span>
+            <select id="velocidad" aria-label="Velocidad">
+              <option value="1500">Lento</option>
+              <option value="950" selected>Normal</option>
+              <option value="450">Rápido</option>
+            </select>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- ================= SECCIÓN: TEXTO ↔ BINARIO ================= -->
+    <main class="rejilla" id="vista-texto" hidden>
+      <div class="col">
+        <section class="tarjeta conversor">
+          <h2><b>1</b> ¿Qué quieres convertir?</h2>
+          <div class="selector" id="selector-conversion" style="--n:2" role="tablist" aria-label="Tipo de conversión">
+            <span class="pastilla" id="pastilla-conv"></span>
+            <button class="opcion" type="button" role="tab" data-modo="texto_a_binario" aria-selected="true">
+              <span class="simbolo">Aa→01</span><span class="nombre">Texto a binario</span></button>
+            <button class="opcion" type="button" role="tab" data-modo="binario_a_texto" aria-selected="false">
+              <span class="simbolo">01→Aa</span><span class="nombre">Binario a texto</span></button>
+          </div>
+
+          <h2><b>2</b> <span id="titulo-texto">Escribe una letra, palabra o frase</span></h2>
+          <div class="campo">
+            <input class="entrada entrada-texto" id="entrada-texto" type="text" autocomplete="off" spellcheck="false"
+                   maxlength="100" placeholder="Hola mundo" aria-label="Texto a convertir">
+            <span class="ayuda" id="ayuda-texto"></span>
+          </div>
+
+          <p class="frase" id="frase-texto"></p>
+          <p class="error" id="error-texto" role="alert" hidden></p>
+
+          <div class="acciones">
+            <button class="primario" id="btn-convertir" type="button">Convertir</button>
+            <button class="sec" id="btn-invertir" type="button" title="Usar el resultado como entrada de la conversión contraria" aria-label="Invertir conversión">⇄</button>
+            <button class="sec" id="btn-limpiar-texto" type="button">Limpiar</button>
+          </div>
+
+          <div class="ejemplos" id="ejemplos-texto"></div>
+        </section>
+
+        <section class="tarjeta referencia">
+          <div class="cab"><h2>Tabla ASCII</h2><span class="sub">toca una fila para usarla</span></div>
+          <div class="grupos" id="grupos-ascii"></div>
+          <div class="tabla-ref" id="tabla-ascii"><p class="vacio-texto">Cargando tabla…</p></div>
+        </section>
+      </div>
+
+      <div class="col">
+        <section class="tarjeta resultado-texto">
+          <div class="cab">
+            <h2>Resultado</h2>
+            <span class="contador" id="cont-chars"></span>
+          </div>
+
+          <div class="banda banda-texto" id="banda-texto" hidden>
+            <div class="banda-bits">
+              <span class="etq" id="etq-salida">Binario</span>
+              <div class="salida" id="salida-texto"></div>
+            </div>
+            <button class="sec" id="btn-copiar-conv" type="button">Copiar</button>
+          </div>
+          <p class="nota" id="nota-texto" hidden></p>
+
+          <div class="desglose" id="desglose" hidden></div>
+          <div class="tabla-conv" id="tabla-conv">
+            <div class="vacio">
+              <div class="deco" aria-hidden="true"><span>0</span><span>1</span><span>0</span><span>1</span></div>
+              <p>Escribe una letra, una palabra o una frase:<br>aquí verás cada letra con su <b>código ASCII</b><br>y sus <b>8 bits</b>.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="pie">
+      <b>Versión 4</b> (web) · Lógica: <code>logica_binaria.py</code> y <code>conversion_texto.py</code> · Puente: <code>puente.py</code> · Python corre en tu navegador
+    </footer>
+  </div>
+
+  <!-- Pyodide = Python dentro del navegador (se descarga una vez y queda en caché) -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
